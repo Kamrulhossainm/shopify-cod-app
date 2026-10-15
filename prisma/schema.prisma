@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = "file:dev.sqlite"
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+// ───────────────────────── COD app models ─────────────────────────
+
+// One row per shop. Each column holds a JSON document validated by
+// app/lib/settings.server.ts (see DEFAULT_SETTINGS for the shape).
+model ShopSettings {
+  shop      String   @id
+  general   String   @default("{}")
+  form      String   @default("{}")
+  shipping  String   @default("{}")
+  otp       String   @default("{}")
+  pixels    String   @default("{}")
+  sheets    String   @default("{}")
+  protection String  @default("{}")
+  updatedAt DateTime @updatedAt
+}
+
+// Quantity breaks / bundle offers shown inside the form ("Buy 2 save 10%").
+model QuantityOffer {
+  id           String   @id @default(cuid())
+  shop         String
+  title        String
+  active       Boolean  @default(true)
+  // "all" or a JSON array of product GIDs
+  productScope String   @default("all")
+  // JSON array of tiers: [{quantity, discountType, discountValue, label, badge, preselected}]
+  tiers        String   @default("[]")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([shop])
+}
+
+// Upsells / downsells. placement: "in_form" (checkbox inside form),
+// "pre_submit" (popup before order is placed), "post_submit" (one-click after order placed).
+model Upsell {
+  id             String   @id @default(cuid())
+  shop           String
+  title          String
+  active         Boolean  @default(true)
+  placement      String   @default("pre_submit")
+  // "all" or JSON array of product GIDs that trigger the upsell
+  triggerScope   String   @default("all")
+  offerVariantId String
+  offerProductTitle String @default("")
+  offerImage     String   @default("")
+  discountType   String   @default("percentage") // percentage | fixed | none
+  discountValue  Float    @default(0)
+  headline       String   @default("Wait! Special offer just for you")
+  description    String   @default("")
+  acceptText     String   @default("Yes, add to my order")
+  declineText    String   @default("No thanks")
+  // Downsell shown when the upsell is declined
+  downsellEnabled       Boolean @default(false)
+  downsellDiscountType  String  @default("percentage")
+  downsellDiscountValue Float   @default(0)
+  downsellHeadline      String  @default("Last chance! Even bigger discount")
+  priority       Int      @default(0)
+  impressions    Int      @default(0)
+  conversions    Int      @default(0)
+  revenue        Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([shop])
+}
+
+model CodOrder {
+  id              String   @id @default(cuid())
+  shop            String
+  shopifyOrderId  String?
+  shopifyOrderName String?
+  draftOrderId    String?
+  status          String   @default("pending") // pending | created | failed
+  customerName    String
+  phone           String
+  email           String?
+  address         String   // JSON of address fields
+  lineItems       String   // JSON
+  subtotal        Float    @default(0)
+  shipping        Float    @default(0)
+  discount        Float    @default(0)
+  codFee          Float    @default(0)
+  total           Float    @default(0)
+  currency        String   @default("USD")
+  upsellRevenue   Float    @default(0)
+  otpVerified     Boolean  @default(false)
+  ip              String?
+  utm             String?
+  error           String?
+  statusPageUrl   String?
+  upsellToken     String?  @unique
+  eventId         String?
+  createdAt       DateTime @default(now())
+
+  @@index([shop, createdAt])
+  @@index([shop, phone])
+}
+
+model AbandonedOrder {
+  id         String   @id @default(cuid())
+  shop       String
+  sessionKey String
+  name       String?
+  phone      String?
+  email      String?
+  data       String   // JSON snapshot of form + cart
+  total      Float    @default(0)
+  currency   String   @default("USD")
+  recovered  Boolean  @default(false)
+  contacted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([shop, sessionKey])
+  @@index([shop, createdAt])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  shop      String
+  phone     String
+  codeHash  String
+  attempts  Int      @default(0)
+  verified  Boolean  @default(false)
+  token     String?  @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([shop, phone])
+}

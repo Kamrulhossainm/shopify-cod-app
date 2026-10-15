@@ -1,0 +1,16 @@
+{%- comment -%}
+  Optional app block: drag it into a product section to control exactly where
+  the COD button (or embedded form) appears. Requires the app embed to be on.
+{%- endcomment -%}
+<div class="cod-slot" data-cod-slot style="margin: {{ block.settings.margin }}px 0;"></div>
+
+{% schema %}
+{
+  "name": "COD Button / Form",
+  "target": "section",
+  "enabled_on": { "templates": ["product", "cart"] },
+  "settings": [
+    { "type": "range", "id": "margin", "label": "Vertical spacing", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 8 }
+  ]
+}
+{% endschema %}
