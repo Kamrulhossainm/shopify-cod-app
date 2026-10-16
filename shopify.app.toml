@@ -1,5 +1,16 @@
 # This file stores configurations for your Shopify app.
 client_id = ""
+name = "COD Form"
+# Set to your hosted URL (e.g. https://cod-app.onrender.com) before `npm run deploy`.
+application_url = "https://example.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+include_config_on_deploy = true
+
+[auth]
+redirect_urls = [ "https://example.com/auth/callback" ]
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes

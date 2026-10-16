@@ -86,7 +86,7 @@
         if (p.get(k)) utm[k] = p.get(k);
       });
       if (Object.keys(utm).length) sessionStorage.setItem("cod_utm", JSON.stringify(utm));
-    } catch (e) {}
+    } catch (e) { /* ignore */ }
   }
   function getUtm() { try { return JSON.parse(sessionStorage.getItem("cod_utm") || "{}"); } catch (e) { return {}; } }
   function hidden(selectors) {
@@ -138,7 +138,7 @@
         if (window.snaptr && p.snapchat) window.snaptr("track", "START_CHECKOUT", { price: value, currency: currency, item_ids: ids });
         if (window.pintrk && p.pinterest) window.pintrk("track", "checkout_initiated", { value: value, currency: currency });
         if (window.gtag && p.ga4) window.gtag("event", "begin_checkout", { value: value, currency: currency });
-      } catch (e) {}
+      } catch (e) { /* ignore */ }
     },
     purchase: function (res) {
       var p = cfg.pixels; if (!p.firePurchase) return;
@@ -150,7 +150,7 @@
         if (window.pintrk && p.pinterest) window.pintrk("track", "checkout", { value: v, currency: c, order_id: res.orderName, event_id: res.eventId });
         if (window.gtag && p.ga4) window.gtag("event", "purchase", { transaction_id: res.orderName, value: v, currency: c });
         if (window.gtag && p.googleAds && p.googleAdsLabel) window.gtag("event", "conversion", { send_to: p.googleAds + "/" + p.googleAdsLabel, value: v, currency: c, transaction_id: res.orderName });
-      } catch (e) {}
+      } catch (e) { /* ignore */ }
     },
   };
 
@@ -424,7 +424,7 @@
     var list = Object.keys(codes);
     if (!list.length) list = [cfg.form.defaultCountry];
     var names;
-    try { names = new Intl.DisplayNames([root.dataset.locale || "en"], { type: "region" }); } catch (e) {}
+    try { names = new Intl.DisplayNames([root.dataset.locale || "en"], { type: "region" }); } catch (e) { /* ignore */ }
     return list.map(function (c) { return c + "|" + (names ? names.of(c) : c); });
   }
   function setDiscountMsg(msg, bad) {
@@ -701,7 +701,7 @@
   api("config" + qs).then(function (c) {
     if (!c || !c.ok) return;
     cfg = c;
-    try { Pixels.load(c.pixels); } catch (e) {}
+    try { Pixels.load(c.pixels); } catch (e) { /* ignore */ }
     mount();
   });
 })();

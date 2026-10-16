@@ -1,0 +1,18 @@
+# Releases the app config + theme extension (the COD form) to Shopify.
+# Needs repo secret SHOPIFY_CLI_PARTNERS_TOKEN (Partner Dashboard -> Settings -> CLI token).
+name: Deploy to Shopify
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx --yes @shopify/cli@latest app deploy --force
+        env:
+          SHOPIFY_CLI_PARTNERS_TOKEN: ${{ secrets.SHOPIFY_CLI_PARTNERS_TOKEN }}
